@@ -359,17 +359,17 @@ export default function RooliLandingPage() {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-sidebar-foreground mb-4">Support</h3>
+              <h3 className="font-semibold text-sidebar-foreground mb-4">Legal</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>
-                  <a href="#" className="hover:text-sidebar-foreground transition-colors">
-                    Help Center
-                  </a>
+                  <Link href="/terms-conditions" className="hover:text-sidebar-foreground transition-colors">
+                    Terms & Conditions
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-sidebar-foreground transition-colors">
-                    Status
-                  </a>
+                  <Link href="/data-policy" className="hover:text-sidebar-foreground transition-colors">
+                    Data Policy
+                  </Link>
                 </li>
                 <li>
                   <Link href="/privacy" className="hover:text-sidebar-foreground transition-colors">
