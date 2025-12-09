@@ -1,11 +1,49 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { loginSchema, type LoginFormData } from "@/core/schema"
+import { useLoginMutation } from "@/core/mutations"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { useSearchParams } from "next/navigation"
+import { useAuth } from "@/providers/auth-provider"
 
 export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get("redirect") || "/dashboard"
+  const { login } = useAuth()
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: 'user@example.com',
+      password: 'StrongPass123!',
+    },
+  })
+
+  const loginMutation = useLoginMutation()
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      const response = await loginMutation.mutateAsync(data)
+      if (response.accessToken && response.user) {
+        login(response.user, response.accessToken, redirect)
+        toast.success("Login successful!")
+      } else {
+        toast.error("Invalid login response from server.")
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Login failed. Please check your credentials.')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -23,10 +61,19 @@ export default function LoginPage() {
             <CardDescription>Sign in to your account to continue managing your social media</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter your email" className="bg-input border-border" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className="bg-input border-border"
+                  {...register('email')}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
@@ -35,7 +82,11 @@ export default function LoginPage() {
                   type="password"
                   placeholder="Enter your password"
                   className="bg-input border-border"
+                  {...register('password')}
                 />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                )}
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -48,8 +99,12 @@ export default function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 

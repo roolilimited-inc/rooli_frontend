@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -5,8 +7,31 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { signupSchema, type SignUpFormData } from "@/core/schema"
+import { useSignupMutation } from "@/core/mutations"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function SignupPage() {
+  const router = useRouter()
+  const { register, handleSubmit, formState: { errors } } = useForm<SignUpFormData>({
+    resolver: zodResolver(signupSchema),
+  })
+  
+  const signupMutation = useSignupMutation()
+
+  const onSubmit = async (data: SignUpFormData) => {
+    try {
+      await signupMutation.mutateAsync(data)
+      toast.success('Account created successfully! Please check your email to verify your account.')
+      router.push('/auth/login')
+    } catch (error: any) {
+      toast.error(error?.message || 'Signup failed. Please try again.')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -24,20 +49,31 @@ export default function SignupPage() {
             <CardDescription>Start your 14-day free trial and transform your social media strategy</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <form className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First name</Label>
-                  <Input id="firstName" placeholder="John" className="bg-input border-border" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last name</Label>
-                  <Input id="lastName" placeholder="Doe" className="bg-input border-border" />
-                </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full name</Label>
+                <Input 
+                  id="name" 
+                  placeholder="John Doe" 
+                  className="bg-input border-border"
+                  {...register('name')}
+                />
+                {errors.name && (
+                  <p className="text-sm text-destructive">{errors.name.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="john@company.com" className="bg-input border-border" />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="john@company.com" 
+                  className="bg-input border-border"
+                  {...register('email')}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
@@ -46,7 +82,11 @@ export default function SignupPage() {
                   type="password"
                   placeholder="Create a strong password"
                   className="bg-input border-border"
+                  {...register('password')}
                 />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm password</Label>
@@ -55,14 +95,18 @@ export default function SignupPage() {
                   type="password"
                   placeholder="Confirm your password"
                   className="bg-input border-border"
+                  {...register('confirmPassword')}
                 />
+                {errors.confirmPassword && (
+                  <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+                )}
               </div>
 
               <div className="flex items-center space-x-2">
                 <Checkbox id="terms" />
                 <Label htmlFor="terms" className="text-sm text-muted-foreground">
                   I agree to the{" "}
-                  <Link href="/terms" className="text-primary hover:underline">
+                  <Link href="/terms-conditions" className="text-primary hover:underline">
                     Terms of Service
                   </Link>{" "}
                   and{" "}
@@ -72,8 +116,12 @@ export default function SignupPage() {
                 </Label>
               </div>
 
-              <Button type="submit" className="w-full">
-                Create Account
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={signupMutation.isPending}
+              >
+                {signupMutation.isPending ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
 

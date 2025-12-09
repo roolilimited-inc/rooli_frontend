@@ -2,6 +2,9 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Open_Sans, Work_Sans } from "next/font/google"
 import "./globals.css"
+import { QueryProvider } from "@/providers/query-provider"
+import { AuthProvider } from "@/providers/auth-provider"
+import { Toaster } from "sonner"
 
 const workSans = Work_Sans({
   subsets: ["latin"],
@@ -31,7 +34,14 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.svg" sizes="any" />
       </head>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <AuthProvider>
+          <QueryProvider>
+            {children}
+            <Toaster />
+          </QueryProvider>
+        </AuthProvider>
+      </body>
     </html>
   )
 }
