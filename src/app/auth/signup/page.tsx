@@ -57,6 +57,9 @@ const formSchema = z.object({
   confirmPassword: z.string().min(8, {
     message: "Confirm password must be at least 8 characters long",
   }),
+  terms: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the terms and privacy policy",
+  }),
 });
 
 export default function SignupPage() {
@@ -74,6 +77,7 @@ export default function SignupPage() {
       email: "",
       password: "",
       confirmPassword: "",
+      terms: false,
     },
     mode: "onChange",
   });
@@ -137,13 +141,15 @@ export default function SignupPage() {
   const watchEmail = form.watch("email");
   const watchPassword = form.watch("password");
   const watchConfirmPassword = form.watch("confirmPassword");
+  const watchTerms = form.watch("terms");
 
   const isFormEmpty =
-    !watchFirstname &&
-    !watchLastName &&
-    !watchEmail &&
-    !watchPassword &&
-    !watchConfirmPassword;
+    !watchFirstname ||
+    !watchLastName ||
+    !watchEmail ||
+    !watchPassword ||
+    !watchConfirmPassword ||
+    !watchTerms;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -344,28 +350,41 @@ export default function SignupPage() {
                   )}
                 />
 
-                <div className="flex items-start space-x-2">
-                  <Checkbox id="terms" />
-                  <Label
-                    htmlFor="terms"
-                    className="text-sm text-muted-foreground flex-wrap"
-                  >
-                    I agree to the{" "}
-                    <Link
-                      href="/terms"
-                      className="text-primary hover:underline"
-                    >
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      href="/privacy"
-                      className="text-primary hover:underline"
-                    >
-                      Privacy Policy
-                    </Link>
-                  </Label>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="terms"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          id="terms"
+                        />
+                      </FormControl>
+                      <FormLabel
+                        htmlFor="terms"
+                        className="text-sm text-muted-foreground flex-wrap font-normal"
+                      >
+                        I agree to the{" "}
+                        <Link
+                          href="/terms"
+                          className="text-primary hover:underline"
+                        >
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link
+                          href="/privacy"
+                          className="text-primary hover:underline"
+                        >
+                          Privacy Policy
+                        </Link>
+                      </FormLabel>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <Button
                   type="submit"
