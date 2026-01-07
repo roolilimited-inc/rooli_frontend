@@ -52,6 +52,7 @@
     "next": "16.1.0-canary.22",
     "next-themes": "latest",
     "nextjs-toploader": "^3.9.17",
+    "nprogress": "^0.2.0",
     "react": "^19",
     "react-day-picker": "latest",
     "react-dom": "^19",

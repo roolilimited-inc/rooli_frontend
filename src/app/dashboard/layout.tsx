@@ -8,14 +8,18 @@ import { useQuery } from "@tanstack/react-query";
 import authService from "@/services/auth.service";
 import PageLoader from "@/components/page-loader";
 import { useRouter } from "next/navigation";
+import { useProgressBarRouter } from "@/hooks/use-progress-bar-router";
+import useToast from "@/components/app-toast";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
+  const showToast = useToast();
+  const router = useProgressBarRouter();
   const [organizationModal, setOrganizationModal] = useState(false);
+  const [paymentModal, setPaymentModal] = useState(false);
   const { data: userProfile, isLoading } = useQuery({
     queryKey: ["user-profile"],
     queryFn: async () => {
@@ -28,15 +32,29 @@ export default function DashboardLayout({
     refetchOnWindowFocus: false,
   });
 
+  console.log("🚀 ~ file: layout.tsx:20 ~ userProfile:", userProfile);
+
   useEffect(() => {
     if (!isLoading && userProfile) {
-      if (!userProfile?.isOnboardingComplete) {
+      if (!userProfile?.result?.isOnboardingComplete) {
+        showToast("Please complete onboarding", "warning");
         router.push("/auth/onboarding");
+        return;
+      }
+
+      if (userProfile?.subscriptionStatus === "inactive") {
+        showToast(
+          "Please complete payment to have access to dashboard.",
+          "warning"
+        );
+        router.replace("/payment-plans");
+        return;
       }
     }
   }, [isLoading, userProfile]);
 
   if (isLoading) return <PageLoader />;
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar

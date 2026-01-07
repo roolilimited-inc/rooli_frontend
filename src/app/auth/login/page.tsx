@@ -31,6 +31,7 @@ import { useAppStore } from "@/store/app-store";
 import { useMutation } from "@tanstack/react-query";
 import { LoginPayload } from "@/types";
 import authService from "@/services/auth.service";
+import { useProgressBarRouter } from "@/hooks/use-progress-bar-router";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -42,6 +43,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
+  const router = useProgressBarRouter();
   const [showPassword, setShowPassword] = useState(false);
   const showToast = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -66,18 +68,32 @@ export default function LoginPage() {
       return response?.data;
     },
     onSuccess: (data) => {
-      const { accessToken, refreshToken, user } = data;
+      console.log("🚀 ~ file: page.tsx:69 ~ data:", data);
+      const {
+        accessToken,
+        refreshToken,
+        user,
+        isOnboardingComplete,
+        lastActiveWorkspaceId,
+      } = data;
       setAccessToken(accessToken);
       setRefreshToken(refreshToken);
 
-      if (user?.isEmailVerified) {
+      if (!user?.isEmailVerified) {
         showToast("Please verify your email", "warning");
+        return;
+      }
+
+      if (!isOnboardingComplete) {
+        showToast("Please complete onboarding", "warning");
+        router.push("/auth/onboarding");
         return;
       }
 
       setUser(user);
 
       showToast("Logged in successfully", "success");
+      router.push("/dashboard");
     },
     onError: (error: any) => {
       const errorResponse =
