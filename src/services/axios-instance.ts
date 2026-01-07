@@ -1,10 +1,5 @@
 import { useAppStore } from "@/store/app-store";
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-} from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -274,10 +269,10 @@ const axiosInstance = (withAuth: boolean = false) => {
           }
         }
 
-        // if (error.response?.status === 403) {
-        //   console.log("403 error - access forbidden, logging out");
-        //   handleAuthError();
-        // }
+        if (error.response?.status === 403) {
+          console.log("403 error - access forbidden, logging out");
+          handleAuthError();
+        }
 
         return Promise.reject(error);
       }

@@ -13,6 +13,8 @@ type AuthStoreProps = {
   setUser: (value: UserType | null) => void;
   organizationId: string | null;
   setOrganizationId: (value: string | null) => void;
+  reference: string | null;
+  setReference: (value: string | null) => void;
 };
 
 export const useAppStore = create<AuthStoreProps>()(
@@ -29,6 +31,8 @@ export const useAppStore = create<AuthStoreProps>()(
         setUser: (value) => set({ user: value }),
         organizationId: null,
         setOrganizationId: (value) => set({ organizationId: value }),
+        reference: null,
+        setReference: (value) => set({ reference: value }),
       }),
       {
         name: "rooli-store",

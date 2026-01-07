@@ -69,7 +69,13 @@ export default function LoginPage() {
     },
     onSuccess: (data) => {
       console.log("🚀 ~ file: page.tsx:69 ~ data:", data);
-      const { accessToken, refreshToken, user } = data;
+      const {
+        accessToken,
+        refreshToken,
+        user,
+        isOnboardingComplete,
+        lastActiveWorkspaceId,
+      } = data;
       setAccessToken(accessToken);
       setRefreshToken(refreshToken);
 
@@ -78,7 +84,7 @@ export default function LoginPage() {
         return;
       }
 
-      if (!user?.isOnboardingComplete) {
+      if (!isOnboardingComplete) {
         showToast("Please complete onboarding", "warning");
         router.push("/auth/onboarding");
         return;
